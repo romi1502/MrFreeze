@@ -56,20 +56,19 @@ Vector MakeSqrtHanningWindow(size_t length) {
   return output;
 }
 
-// TODO(bx5a): find a way to avoid copying data
-Matrix ShiftBuffer(const Matrix& buffer, int shift) {
-  Matrix result(buffer.rows(), buffer.cols());
-  auto to_append = Matrix::Zero(buffer.rows(), std::abs(shift));
-  if (shift < 0) {
-    auto buffer_block = buffer.block(0, std::abs(shift), buffer.rows(),
-                                     buffer.cols() - std::abs(shift));
-    result << buffer_block, to_append;
-    return result;
+void ShiftBuffer(Matrix* buffer, int shift) {
+  assert(shift < 0);
+  // copy end of buffer at the beginning
+  for (Matrix::Index col = 0; col < buffer->cols() - std::abs(shift); col++) {
+    memcpy(buffer->data() + (col * buffer->rows()),
+           buffer->data() + ((col + std::abs(shift)) * buffer->rows()),
+           buffer->rows() * sizeof(float));
   }
-  auto buffer_block =
-      buffer.block(0, 0, buffer.rows(), buffer.cols() - std::abs(shift));
-  result << to_append, buffer_block;
-  return result;
+  // set zeros at the end
+  buffer
+      ->block(0, buffer->cols() - std::abs(shift), buffer->rows(),
+              std::abs(shift))
+      .setZero();
 }
 
 Matrix Angle(const CplxMatrix& input) {
@@ -172,7 +171,7 @@ std::vector<float> Freezer::Read(std::error_code& err) {
   auto buffer_length = params_->input.cols();
 
   // slide output
-  params_->output_buffer = ShiftBuffer(params_->output_buffer, -buffer_length);
+  ShiftBuffer(&(params_->output_buffer), -buffer_length);
 
   params_->sliding_buffer.block(0, params_->index_sliding,
                                 params_->channel_number, buffer_length) =
@@ -237,8 +236,7 @@ std::vector<float> Freezer::Read(std::error_code& err) {
       out_buffer_offset += params_->hop_size;
     }
 
-    params_->sliding_buffer =
-        ShiftBuffer(params_->sliding_buffer, -params_->hop_size);
+    ShiftBuffer(&(params_->sliding_buffer), -params_->hop_size);
     params_->index_sliding -= params_->hop_size;
   }
 
