@@ -1,3 +1,4 @@
 *.o
 *.so
 Eigen/
+.DS_Store
