@@ -3,8 +3,8 @@ CXX ?= g++
 
 # flags
 #  -I../Shared_files
-CXXFLAGS += -O3 -ffast-math -Wall -fPIC -DPIC $(shell pkg-config --cflags fftw3f) -std=c++11 -I. -I./Eigen
-LDFLAGS += -shared $(shell pkg-config --libs fftw3f) -lm -lfftw3f
+CXXFLAGS += -O3 -ffast-math -Wall -fPIC -DPIC $(shell pkg-config --cflags fftw3f) -std=c++11 -I./src -I./Eigen
+LDFLAGS += -shared $(shell pkg-config --libs fftw3f) -lm
 
 ifneq ($(NOOPT),true)
 CXXFLAGS += -mtune=generic -msse -msse2 -mfpmath=sse
@@ -27,8 +27,7 @@ endif
 INSTALLATION_PATH = $(DESTDIR)$(INSTALL_PATH)/$(EFFECT_PATH)
 
 # sources and objects
-# $(wildcard ../Shared_files/*.cpp)
-SRC = $(wildcard src/*.cpp) $(wildcard freeze_engine/*.cpp)
+SRC = $(wildcard src/*.cpp) $(wildcard src/freeze_engine/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
 ## rules
@@ -38,7 +37,7 @@ $(PLUGIN_SO): $(OBJ)
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 clean:
-	$(RM) *.so src/*.o freeze_engine/*.o
+	$(RM) *.so src/*.o
 
 install: all
 	mkdir -p $(INSTALLATION_PATH)

@@ -1,17 +1,13 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <cmath>
-//#include "lv2.h"
-//#include "PitchShifterClasses.h"
-#include <lv2/lv2plug.in/ns/lv2core/lv2.h>
-#include "../freeze_engine/freeze_engine.h"
-#include <armadillo>
 
+#include <iostream>
 #include <queue>
 
-//using namespace arma;
-//using namespace std;
+#include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 
+#include "freeze_engine/freeze_engine.h"
 
 /**********************************************************************************************************************************************************/
 
@@ -156,7 +152,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples)
     }
 
     // queue input data
-    for (int sample_idx=0; sample_idx < n_samples; sample_idx++) {
+    for (size_t sample_idx=0; sample_idx < n_samples; sample_idx++) {
       plugin->input_queue.push(in[sample_idx]);
     }
 
@@ -164,7 +160,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples)
     std::error_code err;
     while (plugin->input_queue.size() > plugin->temp_buffer.size()) {
       // Get data from input queue
-      for (int sample_idx = 0; sample_idx < plugin->temp_buffer.size(); sample_idx++) {
+      for (size_t sample_idx = 0; sample_idx < plugin->temp_buffer.size(); sample_idx++) {
         plugin->temp_buffer[sample_idx] = plugin->input_queue.front();
         plugin->input_queue.pop();
       }
@@ -182,13 +178,13 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples)
       }
 
       // Push data to output queue
-      for (int sample_idx = 0; sample_idx < result.size(); sample_idx++) {
+      for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
         plugin->output_queue.push(result[sample_idx] + plugin->dry_gain * plugin->temp_buffer[sample_idx]);
       }
     }
 
     // Fill output buffer
-    for (int sample_idx=0; sample_idx < n_samples; sample_idx++) {
+    for (size_t sample_idx=0; sample_idx < n_samples; sample_idx++) {
       // Zeros if we don't have enough data available
       if (plugin->output_queue.empty()) {
         out[sample_idx] = 0;
