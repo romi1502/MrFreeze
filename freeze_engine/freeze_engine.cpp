@@ -7,7 +7,7 @@
 #define M_PI 3.14159265358979323846
 #endif  // M_PI
 
-#include "../Eigen/Core"
+#include <Eigen/Core>
 //#include <unsupported/Eigen/FFT>
 #include "fft.h"
 
