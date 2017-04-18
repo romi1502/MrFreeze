@@ -12,7 +12,7 @@
 /**********************************************************************************************************************************************************/
 
 #define PLUGIN_URI "http://romain-hennequin.fr/plugins/mod-devel/Freeze"
-enum { IN, OUT, STEP, CLEAN, PLUGIN_PORT_COUNT };
+enum { IN, OUT, FREEZE, STEP, CLEAN, PLUGIN_PORT_COUNT };
 
 /**********************************************************************************************************************************************************/
 
@@ -120,9 +120,10 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 
   float* in = plugin->ports[IN];
   float* out = plugin->ports[OUT];
-  float step = (float)(*(plugin->ports[STEP]));
+  int freeze  = (int)(*(plugin->ports[FREEZE])+0.5f);
+  //float step = (float)(*(plugin->ports[STEP]));
   int c = 0;
-  if (step > 0.5f) c = 1;
+  if (freeze==1) c = 1;
 
   // enable / disable on TOGGLE CLEAN button
   bool enabled = c == 1;

@@ -55,6 +55,17 @@ lv2:port
 [
     a lv2:ControlPort, lv2:InputPort;
     lv2:index 2;
+    lv2:symbol "Freeze";
+    lv2:name "Freeze";
+    lv2:shortName "Freeze";
+    lv2:portProperty lv2:toggled, lv2:integer;
+    lv2:default 0;
+    lv2:minimum 0;
+    lv2:maximum 1;
+],
+[
+    a lv2:ControlPort, lv2:InputPort;
+    lv2:index 3;
     lv2:symbol "Step";
     lv2:name "Step";
     lv2:shortName "Step";
@@ -64,7 +75,7 @@ lv2:port
 ],
 [
     a lv2:ControlPort, lv2:InputPort;
-    lv2:index 3;
+    lv2:index 4;
     lv2:symbol "Clean";
     lv2:name "Clean";
     lv2:shortName "Clean";
