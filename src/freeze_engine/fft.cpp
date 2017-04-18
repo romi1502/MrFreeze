@@ -1,5 +1,5 @@
+#include <cstring>
 #include "fft.h"
-
 #include "fftw3.h"
 
 namespace freeze {
@@ -34,14 +34,14 @@ void FFT::Init(size_t nfft) {
 /*fftwf_destroy_plan(impl_->backward_plan);*/
 
 void FFT::Forward(float* in, std::complex<float>* out) {
-  memcpy( impl_->forward_in, in, (impl_->nfft) * sizeof( float ) );
+  std::memcpy( impl_->forward_in, in, (impl_->nfft) * sizeof( float ) );
   fftwf_execute(impl_->forward_plan);
-  memcpy( out, impl_->forward_out, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
+  std::memcpy( out, impl_->forward_out, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
 
 }
 
 void FFT::Inverse(std::complex<float>* in, float* out) {
-  memcpy( impl_->backward_in, in, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
+  std::memcpy( impl_->backward_in, in, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
 
   fftwf_execute(impl_->backward_plan);
   for (size_t index = 0; index < impl_->nfft; index++) {
