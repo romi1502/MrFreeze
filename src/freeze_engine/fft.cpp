@@ -1,4 +1,6 @@
 #include <cstring>
+#include <cassert>
+
 #include "fft.h"
 #include "fftw3.h"
 
@@ -13,35 +15,57 @@ class FFT::Impl {
   fftwf_complex* forward_out;
   fftwf_complex* backward_in;
   float* backward_out;
+  bool plan_initialized;
 };
-FFT::FFT() : impl_(std::make_shared<FFT::Impl>()) {}
+FFT::FFT() : impl_(std::make_shared<FFT::Impl>()) {
+  impl_->plan_initialized = false;
+}
 
-void FFT::Init(size_t nfft) {
-    impl_->nfft = nfft;
-
-    // forward plan
-    impl_->forward_in = new float[nfft];
-    impl_->forward_out = new fftwf_complex[nfft/2 + 1];
-    impl_->forward_plan = fftwf_plan_dft_r2c_1d(impl_->nfft, impl_->forward_in, impl_->forward_out, FFTW_MEASURE);
-
-    // backward plan
-    impl_->backward_in = new fftwf_complex[nfft/2 + 1];
-    impl_->backward_out = new float[nfft];
-    impl_->backward_plan = fftwf_plan_dft_c2r_1d(impl_->nfft, impl_->backward_in, impl_->backward_out, FFTW_MEASURE);
-
+FFT::~FFT() {
+  if (!impl_->plan_initialized) {
+    return;
   }
-/*fftwf_destroy_plan(impl_->forward_plan);*/
-/*fftwf_destroy_plan(impl_->backward_plan);*/
+  fftwf_destroy_plan(impl_->forward_plan);
+  fftwf_destroy_plan(impl_->backward_plan);
+}
+
+void FFT::Init(size_t nfft, const std::string& wisdom) {
+  impl_->nfft = nfft;
+
+  assert(fftwf_import_wisdom_from_filename(wisdom.c_str()) != 0);
+  auto fftw_flags = FFTW_WISDOM_ONLY | FFTW_MEASURE;
+
+  // forward plan
+  impl_->forward_in = new float[nfft];
+  impl_->forward_out = new fftwf_complex[nfft/2 + 1];
+  impl_->forward_plan = fftwf_plan_dft_r2c_1d(impl_->nfft,
+                                              impl_->forward_in,
+                                              impl_->forward_out,
+                                              fftw_flags);
+
+  // backward plan
+  impl_->backward_in = new fftwf_complex[nfft/2 + 1];
+  impl_->backward_out = new float[nfft];
+  impl_->backward_plan = fftwf_plan_dft_c2r_1d(impl_->nfft,
+                                               impl_->backward_in,
+                                               impl_->backward_out,
+                                               fftw_flags);
+
+  impl_->plan_initialized = true;
+}
 
 void FFT::Forward(float* in, std::complex<float>* out) {
-  std::memcpy( impl_->forward_in, in, (impl_->nfft) * sizeof( float ) );
+  std::memcpy(impl_->forward_in, in,
+              (impl_->nfft) * sizeof( float ) );
   fftwf_execute(impl_->forward_plan);
-  std::memcpy( out, impl_->forward_out, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
+  std::memcpy(out, impl_->forward_out,
+              (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
 
 }
 
 void FFT::Inverse(std::complex<float>* in, float* out) {
-  std::memcpy( impl_->backward_in, in, (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
+  std::memcpy(impl_->backward_in, in,
+              (impl_->nfft/2 +1) * sizeof( fftwf_complex ) );
 
   fftwf_execute(impl_->backward_plan);
   for (size_t index = 0; index < impl_->nfft; index++) {

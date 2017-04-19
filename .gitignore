@@ -2,3 +2,4 @@
 *.so
 Eigen/
 .DS_Store
+mrfreeze.wisdom

@@ -11,8 +11,8 @@ namespace freeze {
 class Freezer {
  public:
   Freezer();
-  void Init(size_t channel_number, size_t fft_size = 2048,
-            float overlap_rate = 0.5);
+  void Init(size_t channel_number, const std::string& wisdom,
+            size_t fft_size = 2048, float overlap_rate = 0.5);
 
   void Write(const std::vector<float>& data, std::error_code& err);
   std::vector<float> Read(std::error_code& err);

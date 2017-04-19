@@ -114,7 +114,8 @@ void InplaceModulo(Matrix* matrix, float value) {
 // Class definitions
 Freezer::Freezer() : params_(std::make_shared<Parameters>()) {}
 
-void Freezer::Init(size_t channel_number, size_t fft_size, float overlap_rate) {
+void Freezer::Init(size_t channel_number, const std::string& wisdom,
+                   size_t fft_size, float overlap_rate) {
   // initialize input values
   params_->input.resize(channel_number, 0);
 
@@ -135,7 +136,7 @@ void Freezer::Init(size_t channel_number, size_t fft_size, float overlap_rate) {
   params_->index_sliding = fft_size - params_->hop_size;
   params_->is_on = false;
   params_->just_on = false;
-  params_->fft.Init(fft_size);
+  params_->fft.Init(fft_size, wisdom);
 }
 
 void Freezer::Write(const std::vector<float>& data, std::error_code& err) {

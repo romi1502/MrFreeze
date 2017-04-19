@@ -8,7 +8,8 @@ namespace freeze {
 class FFT {
  public:
   FFT();
-  void Init(size_t nfft);
+  ~FFT();
+  void Init(size_t nfft, const std::string& wisdom);
   void Forward(float* input, std::complex<float>* output);
   void Inverse(std::complex<float>* input, float* output);
 

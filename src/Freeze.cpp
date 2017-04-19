@@ -25,12 +25,12 @@ class Freeze {
   }
   ~Freeze() { Destruct(); }
   void Construct(uint32_t n_samples, int nBuffers, double samplerate,
-                 const char* wisdomFile) {
+                 const std::string& wisdomFile) {
     this->nBuffers = nBuffers;
     SampleRate = samplerate;
 
     freezer = new freeze::Freezer();
-    freezer->Init(1);
+    freezer->Init(1, wisdomFile, 2048);
 
     const size_t kBufferLen = 1024;
     temp_buffer.resize(kBufferLen);
@@ -42,7 +42,7 @@ class Freeze {
   void Destruct() { delete freezer; }
   void Realloc(uint32_t n_samples, int nBuffers) {
     Destruct();
-    Construct(n_samples, nBuffers, SampleRate, wisdomFile.c_str());
+    Construct(n_samples, nBuffers, SampleRate, wisdomFile);
   }
 
   static LV2_Handle instantiate(const LV2_Descriptor* descriptor,
@@ -90,7 +90,7 @@ LV2_Handle Freeze::instantiate(const LV2_Descriptor* descriptor,
                                double samplerate, const char* bundle_path,
                                const LV2_Feature* const* features) {
   std::string wisdomFile = bundle_path;
-  wisdomFile += "/harmonizer.wisdom";
+  wisdomFile += "/mrfreeze.wisdom";
   const uint32_t n_samples = 128;  // GetBufferSize(features);
   Freeze* plugin = new Freeze(n_samples, n_samples, samplerate, wisdomFile);
   return (LV2_Handle)plugin;
