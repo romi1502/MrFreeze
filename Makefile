@@ -4,7 +4,7 @@ CXX ?= g++
 # flags
 #  -I../Shared_files
 CXXFLAGS += -O3 -ffast-math -Wall -fPIC -DPIC $(shell pkg-config --cflags fftw3f) -std=c++11 -I./src -I./Eigen
-LDFLAGS += -shared $(shell pkg-config --libs fftw3f) -lm
+LDFLAGS += -shared $(shell pkg-config --libs fftw3f)
 
 ifneq ($(NOOPT),true)
 CXXFLAGS += -mtune=generic -msse -msse2 -mfpmath=sse
@@ -55,5 +55,4 @@ install: all
 $(WISDOM_FILE):
 	@echo "Generating harmonizer.wisdom file, this might take a while..."
 	fftwf-wisdom -n -x -o $@ \
-	rof2048 rob2048
-	#rof1024 rob1024 rof1536 rob1536 rof2048 rob2048 rof2176 rob2176 rof2304 rob2304 rof2432 rob2432 rof2560 rob2560 rof3072 rob3072 rof4096 rob4096
+	rof1024 rob1024 rof1536 rob1536 rof2048 rob2048 rof2176 rob2176 rof2304 rob2304 rof2432 rob2432 rof2560 rob2560 rof3072 rob3072 rof4096 rob4096

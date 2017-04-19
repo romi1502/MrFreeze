@@ -1,5 +1,5 @@
 #include <cstring>
-#include <cassert>
+#include <iostream>
 
 #include "fft.h"
 #include "fftw3.h"
@@ -32,8 +32,13 @@ FFT::~FFT() {
 void FFT::Init(size_t nfft, const std::string& wisdom) {
   impl_->nfft = nfft;
 
-  assert(fftwf_import_wisdom_from_filename(wisdom.c_str()) != 0);
   auto fftw_flags = FFTW_WISDOM_ONLY | FFTW_MEASURE;
+  auto success = fftwf_import_wisdom_from_filename(wisdom.c_str());
+  if (!success) {
+    fftw_flags = FFTW_MEASURE;
+    std::cout << "Couldn't import wisdom file: " << wisdom
+              << ". Using estimate instead." << std::endl;
+  }
 
   // forward plan
   impl_->forward_in = new float[nfft];
