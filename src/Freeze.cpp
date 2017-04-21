@@ -12,7 +12,7 @@
 /**********************************************************************************************************************************************************/
 
 #define PLUGIN_URI "http://romain-hennequin.fr/plugins/mod-devel/Freeze"
-enum { IN, OUT, FREEZE, STEP, CLEAN, PLUGIN_PORT_COUNT };
+enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, PLUGIN_PORT_COUNT };
 
 /**********************************************************************************************************************************************************/
 
@@ -121,7 +121,8 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   float* in = plugin->ports[IN];
   float* out = plugin->ports[OUT];
   int freeze  = (int)(*(plugin->ports[FREEZE])+0.5f);
-  //float step = (float)(*(plugin->ports[STEP]));
+  float freeze_gain = (float)(*(plugin->ports[FREEZEGAIN]));
+  float dry_gain = (float)(*(plugin->ports[DRYGAIN]));
   int c = 0;
   if (freeze==1) c = 1;
 
@@ -134,13 +135,14 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     plugin->freezer->Disable();
   }
 
-  // Dry gain factor
+  plugin->dry_gain = dry_gain;
+/*  // Dry gain factor
   if (plugin->freezer->IsEnabled()) {
     plugin->dry_gain *= 0.8;
   } else {
     plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
   }
-
+*/
   // queue input data
   for (size_t sample_idx = 0; sample_idx < n_samples; sample_idx++) {
     plugin->input_queue.push(in[sample_idx]);
@@ -172,7 +174,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 
     // Push data to output queue
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
-      plugin->output_queue.push(result[sample_idx] +
+      plugin->output_queue.push(freeze_gain * result[sample_idx] +
                                 plugin->dry_gain *
                                     plugin->temp_buffer[sample_idx]);
     }

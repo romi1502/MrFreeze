@@ -66,21 +66,23 @@ lv2:port
 [
     a lv2:ControlPort, lv2:InputPort;
     lv2:index 3;
-    lv2:symbol "Step";
-    lv2:name "Step";
-    lv2:shortName "Step";
+    lv2:symbol "FreezeGain";
+    lv2:name "Freeze Gain";
+    lv2:shortName "Freeze Gain";
     lv2:default 0.0;
-    lv2:minimum 0.0;
-    lv2:maximum 1.0;
+    lv2:minimum -48.0;
+    lv2:maximum 3.0;
+    units:unit units:db;
 ],
 [
     a lv2:ControlPort, lv2:InputPort;
     lv2:index 4;
-    lv2:symbol "Clean";
-    lv2:name "Clean";
-    lv2:shortName "Clean";
-    lv2:portProperty lv2:toggled, lv2:integer;
-    lv2:default 0;
-    lv2:minimum 0;
-    lv2:maximum 1;
-].
+    lv2:symbol "DryGain";
+    lv2:name "Dry Gain";
+    lv2:shortName "Dry Gain";
+    lv2:default 0.0;
+    lv2:minimum -48.0;
+    lv2:maximum 3.0;
+    units:unit units:db;
+]
+.
