@@ -122,7 +122,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   float* out = plugin->ports[OUT];
   int freeze  = (int)(*(plugin->ports[FREEZE])+0.5f);
   float freeze_gain_db = (float)(*(plugin->ports[FREEZEGAIN]));
-  float freeze_gain = std::pow(freeze_gain_db/20.0);
+  float freeze_gain = std::pow(10,freeze_gain_db/20.0);
   float dry_gain_db = (float)(*(plugin->ports[DRYGAIN]));
   int c = 0;
   if (freeze==1) c = 1;
@@ -136,7 +136,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     plugin->freezer->Disable();
   }
 
-  plugin->dry_gain = std::pow(dry_gain_db/20.0);
+  plugin->dry_gain = std::pow(10,dry_gain_db/20.0);
   if (dry_gain_db == -48)
     plugin->dry_gain = 0;
 /*  // Dry gain factor
