@@ -1,5 +1,7 @@
 # MrFreeze
-Freeze LV2 Plugin
+MrFreeze is an LV2 Plugin designed for [the Mod Duo](https://moddevices.com/) (although it can be also built for other platforms).
+This LV2 plugin is an audio effect that provides an infinite sustain pedal for any tonal sound in a way similar as the [Electro Harmonix Freeze pedal] (http://www.ehx.com/products/freeze).
+A demo of the effect on the Mod Duo can be seen [here](https://drive.google.com/open?id=0B2q3qYi2cyKQUEZCcmJyWmszMDQ).
 
 ## Dependencies
 
