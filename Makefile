@@ -30,8 +30,8 @@ INSTALLATION_PATH = $(DESTDIR)$(INSTALL_PATH)/$(EFFECT_PATH)
 SRC = $(wildcard src/*.cpp) $(wildcard src/freeze_engine/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
-# # wisdom
-# WISDOM_FILE = mrfreeze.wisdom
+# wisdom
+WISDOM_FILE = mrfreeze.wisdom
 
 ## rules
 all: $(PLUGIN_SO)
