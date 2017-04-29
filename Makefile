@@ -30,15 +30,15 @@ INSTALLATION_PATH = $(DESTDIR)$(INSTALL_PATH)/$(EFFECT_PATH)
 SRC = $(wildcard src/*.cpp) $(wildcard src/freeze_engine/*.cpp)
 OBJ = $(SRC:.cpp=.o)
 
-# wisdom
-WISDOM_FILE = mrfreeze.wisdom
+# # wisdom
+# WISDOM_FILE = mrfreeze.wisdom
 
 ## rules
 all: $(PLUGIN_SO)
 
 $(PLUGIN_SO): $(OBJ)
 	$(CXX) $^ $(LDFLAGS) -o $@
-	make $(WISDOM_FILE)
+	# make $(WISDOM_FILE)
 
 clean:
 	$(RM) *.so src/*.o src/freeze_engine/*.o
@@ -52,7 +52,7 @@ install: all
 %.o: %.cpp
 	$(CXX) $< $(CXXFLAGS) -c -o $@
 
-$(WISDOM_FILE):
-	@echo "Generating harmonizer.wisdom file, this might take a while..."
-	fftwf-wisdom -n -x -o $@ \
-	rof1024 rob1024 rof1536 rob1536 rof2048 rob2048 rof2176 rob2176 rof2304 rob2304 rof2432 rob2432 rof2560 rob2560 rof3072 rob3072 rof4096 rob4096
+# $(WISDOM_FILE):
+# 	@echo "Generating harmonizer.wisdom file, this might take a while..."
+# 	fftwf-wisdom -n -x -o $@ \
+# 	rof1024 rob1024 rof1536 rob1536 rof2048 rob2048 rof2176 rob2176 rof2304 rob2304 rof2432 rob2432 rof2560 rob2560 rof3072 rob3072 rof4096 rob4096
