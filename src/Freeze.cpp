@@ -30,12 +30,14 @@ class Freeze {
     SampleRate = samplerate;
 
     freezer = new freeze::Freezer();
-    freezer->Init(1, wisdomFile, 2048);
+    int n_FFT = 2048
+    freezer->Init(1, wisdomFile, n_FFT);
 
-    const size_t kBufferLen = 1024;
+    const size_t kBufferLen = n_FFT/2;
     temp_buffer.resize(kBufferLen);
 
     dry_gain = 1;
+    freeze_gain = 1;
 
     cont = 0;
   }
@@ -60,6 +62,7 @@ class Freeze {
   std::queue<float> input_queue, output_queue;
   std::vector<float> temp_buffer;
   float dry_gain;
+  float freeze_gain;
 
   int nBuffers;
   int cont;
