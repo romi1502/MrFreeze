@@ -30,7 +30,7 @@ class Freeze {
     SampleRate = samplerate;
 
     freezer = new freeze::Freezer();
-    int n_FFT = 1024
+    int n_FFT = 1024;
     freezer->Init(1, wisdomFile, n_FFT);
 
     const size_t kBufferLen = n_FFT/2;
