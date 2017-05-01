@@ -38,7 +38,7 @@ class Freeze {
 
     dry_gain = 1;
     freeze_gain = 0;
-    time_since_last_freeze = 0;
+    time_since_last_freeze = -1.;
 
     cont = 0;
   }
@@ -146,16 +146,19 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     plugin->dry_gain = 0;
 
   float freeze_target_gain = 0.;
+  float freeze_init_gain = 0.;
 
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    if (plugin->time_since_last_freeze>100000.)
+    freeze_init_gain = plugin->freeze_gain;
+    if (plugin->time_since_last_freeze<0.0)
       plugin->time_since_last_freeze = 0.;
   } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
     /*dry_target_gain = 0*/
-    plugin->time_since_last_freeze = 10000000.;
+    freeze_target_gain = 0.;
+    plugin->time_since_last_freeze = -1.0;
   }
 
 
@@ -194,11 +197,12 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     float sample_duration = 1./((float) plugin->SampleRate);
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
 
-      if (plugin->time_since_last_freeze>=fade_duration)
+      if ((plugin->time_since_last_freeze<0)||(plugin->time_since_last_freeze>=fade_duration)){
         plugin->freeze_gain = freeze_target_gain;
+      }
       else {
         float l = plugin->time_since_last_freeze/fade_duration;
-        plugin->freeze_gain = (1-l)*plugin->freeze_gain + (l*freeze_target_gain);
+        plugin->freeze_gain = (1-l)*freeze_init_gain + (l*freeze_target_gain);
         plugin->time_since_last_freeze+= sample_duration;
       }
 
