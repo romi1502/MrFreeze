@@ -12,7 +12,7 @@
 /**********************************************************************************************************************************************************/
 
 #define PLUGIN_URI "http://romain-hennequin.fr/plugins/mod-devel/Freeze"
-enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, PLUGIN_PORT_COUNT };
+enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, FADEINDURATION, PLUGIN_PORT_COUNT };
 
 /**********************************************************************************************************************************************************/
 
@@ -186,7 +186,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
                 << err.message() << std::endl;
     }
 
-    float fade_duration = 0.5;
+    float fade_duration = (float)(*(plugin->ports[FADEINDURATION]));
 
     // Push data to output queue
     float sample_duration = 1./((float) plugin->SampleRate);
@@ -197,8 +197,8 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
       else {
         float l = plugin->time_since_last_freeze/fade_duration;
         plugin->freeze_gain = (1-l)*plugin->freeze_gain + (l*freeze_target_gain);
+        plugin->time_since_last_freeze+= sample_duration;
       }
-      plugin->time_since_last_freeze+= sample_duration;
 
       plugin->output_queue.push(
                 plugin->freeze_gain * freeze_gain * result[sample_idx] +
