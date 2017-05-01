@@ -150,7 +150,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    if (plugin->time_since_last_freeze==10000000.)
+    if (plugin->time_since_last_freeze>100000.)
       plugin->time_since_last_freeze = 0.;
   } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
