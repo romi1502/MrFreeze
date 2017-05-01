@@ -37,7 +37,8 @@ class Freeze {
     temp_buffer.resize(kBufferLen);
 
     dry_gain = 1;
-    freeze_gain = 1;
+    freeze_gain = 0;
+    time_since_last_freeze = 0;
 
     cont = 0;
   }
@@ -63,6 +64,7 @@ class Freeze {
   std::vector<float> temp_buffer;
   float dry_gain;
   float freeze_gain;
+  float time_since_last_freeze;
 
   int nBuffers;
   int cont;
@@ -142,13 +144,19 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   plugin->dry_gain = std::pow(10,dry_gain_db/20.0);
   if (dry_gain_db == -48)
     plugin->dry_gain = 0;
-/*  // Dry gain factor
+
+  float freeze_target_gain = 0.;
+
   if (plugin->freezer->IsEnabled()) {
-    plugin->dry_gain *= 0.8;
-  } else {
-    plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
-  }
-*/
+/*    plugin->dry_gain *= 0.8;*/
+    freeze_target_gain = 1.;
+    plugin->time_since_last_freeze = 0.;
+  } /*else {
+    // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
+    dry_target_gain = 0
+  }*/
+
+
   // queue input data
   for (size_t sample_idx = 0; sample_idx < n_samples; sample_idx++) {
     plugin->input_queue.push(in[sample_idx]);
@@ -178,11 +186,24 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
                 << err.message() << std::endl;
     }
 
+    float fade_duration = 0.5;
+
     // Push data to output queue
+    float sample_duration = 1./((float) plugin->SampleRate);
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
-      plugin->output_queue.push(freeze_gain * result[sample_idx] +
-                                plugin->dry_gain *
-                                    plugin->temp_buffer[sample_idx]);
+
+      if (plugin->time_since_last_freeze>=fade_duration)
+        plugin->freeze_gain = freeze_target_gain;
+      else {
+        float l = plugin->time_since_last_freeze/fade_duration;
+        plugin->freeze_gain = (1-l)*plugin->freeze_gain + (l*freeze_target_gain);
+      }
+      plugin->time_since_last_freeze+= sample_duration;
+
+      plugin->output_queue.push(
+                plugin->freeze_gain * freeze_gain * result[sample_idx] +
+                plugin->dry_gain * plugin->temp_buffer[sample_idx]
+              );
     }
   }
 
