@@ -150,11 +150,13 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    plugin->time_since_last_freeze = 0.;
-  } /*else {
+    if (plugin->time_since_last_freeze==10000000.)
+      plugin->time_since_last_freeze = 0.;
+  } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
-    dry_target_gain = 0
-  }*/
+    /*dry_target_gain = 0*/
+    plugin->time_since_last_freeze = 10000000.;
+  }
 
 
   // queue input data
