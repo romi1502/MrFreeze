@@ -37,7 +37,7 @@ class Freeze {
     temp_buffer.resize(kBufferLen);
 
     dry_gain = 1;
-    freeze_envelope_gain = 0.001;
+    freeze_envelope_gain = 0.;
     time_since_last_freeze = -1.;
     fade_in = false;
     fade_out = false;
@@ -154,11 +154,12 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   float freeze_target_gain;
 /*  float freeze_init_gain = 0.;
 */
+  float min_gain = 0.001;
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    if (plugin->freeze_envelope_gain == 0)
-      plugin->freeze_envelope_gain = 0.001;
+    if (plugin->freeze_envelope_gain < min_gain)
+      plugin->freeze_envelope_gain = min_gain;
     /*freeze_init_gain = plugin->freeze_envelope_gain;*/
     /*if (!(plugin->fade_running))*/
     plugin->fade_in = true;
@@ -169,7 +170,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
     /*dry_target_gain = 0*/
-    freeze_target_gain = 0.0001;
+    freeze_target_gain = min_gain;
     /*freeze_init_gain = plugin->freeze_envelope_gain;*/
     /*plugin->time_since_last_freeze = -1.0;*/
     plugin->fade_in = false;
@@ -210,7 +211,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 
     // Push data to output queue
     /*float sample_duration = 1./((float) plugin->SampleRate);*/
-    float alpha = std::pow(0.99, 1./(fade_duration * plugin->SampleRate));
+    float alpha = std::pow(0.99/min_gain, 1./(fade_duration * plugin->SampleRate));
 
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
 
@@ -220,7 +221,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
       if (plugin->fade_out & (plugin->freeze_envelope_gain>freeze_target_gain))
         plugin->freeze_envelope_gain/=alpha;
 
-      if (plugin->fade_out & (plugin->freeze_envelope_gain<=freeze_target_gain))
+      if (plugin->fade_out & (plugin->freeze_envelope_gain<=min_gain))
         plugin->freeze_envelope_gain = 0.;
     /*      if ((plugin->time_since_last_freeze<0)||(plugin->time_since_last_freeze>=fade_duration)){
         plugin->freeze_envelope_gain = freeze_target_gain;
