@@ -39,6 +39,7 @@ class Freeze {
     dry_gain = 1;
     freeze_gain = 0;
     time_since_last_freeze = -1.;
+    fade_running = false;
 
     cont = 0;
   }
@@ -65,6 +66,7 @@ class Freeze {
   float dry_gain;
   float freeze_gain;
   float time_since_last_freeze;
+  bool fade_running;
 
   int nBuffers;
   int cont;
@@ -152,12 +154,15 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
     freeze_init_gain = plugin->freeze_gain;
+    /*if (!(plugin->fade_running))*/
     if (plugin->time_since_last_freeze<0.0)
       plugin->time_since_last_freeze = 0.;
+
   } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
     /*dry_target_gain = 0*/
-    freeze_target_gain = 0.;
+    freeze_target_gain = 1.;
+    freeze_init_gain = plugin->freeze_gain;
     plugin->time_since_last_freeze = -1.0;
   }
 
@@ -206,6 +211,7 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
         plugin->time_since_last_freeze+= sample_duration;
       }
 
+      plugin->freeze_gain = 1;
       plugin->output_queue.push(
                 plugin->freeze_gain * freeze_gain * result[sample_idx] +
                 plugin->dry_gain * plugin->temp_buffer[sample_idx]
