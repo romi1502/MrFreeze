@@ -211,7 +211,7 @@ std::vector<float> Freezer::Read(std::error_code& err) {
     }
 
     // update output if is_on
-    if (params_->is_on) {
+    if (true) {//params_->is_on
       params_->total_dphi += params_->dphi;
       InplaceModulo(&(params_->total_dphi), 2 * M_PI);
 
