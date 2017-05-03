@@ -1,0 +1,26 @@
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+
+<http://romain-hennequin.fr/plugins/mod-devel/Freeze>
+    modgui:gui [
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/icon-mr-freeze.html> ;
+        modgui:stylesheet <modgui/stylesheet-mr-freeze.css> ;
+        modgui:screenshot <modgui/screenshot-mr-freeze.png> ;
+        modgui:thumbnail <modgui/thumbnail-mr-freeze.png> ;
+        modgui:brand "MR FREEZE" ;
+        modgui:label "" ;
+        modgui:model "boxy" ;
+        modgui:panel "2-knobs" ;
+        modgui:color "zinc" ;
+        modgui:knob "blue" ;
+        modgui:port [
+            lv2:index 0 ;
+            lv2:symbol "FadeIn" ;
+            lv2:name "Fade In" ;
+        ] , [
+            lv2:index 1 ;
+            lv2:symbol "FadeOut" ;
+            lv2:name "Fade Out" ;
+        ] ;
+    ] .

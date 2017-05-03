@@ -3,5 +3,5 @@
 
 <http://romain-hennequin.fr/plugins/mod-devel/Freeze> a lv2:Plugin;
     lv2:binary <mod-mrfreeze.so>;
-    rdfs:seeAlso <Freeze.ttl>.
+    rdfs:seeAlso <Freeze.ttl>,<modgui.ttl>.
 
