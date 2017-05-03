@@ -12,7 +12,7 @@
 /**********************************************************************************************************************************************************/
 
 #define PLUGIN_URI "http://romain-hennequin.fr/plugins/mod-devel/Freeze"
-enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, FADEINDURATION, PLUGIN_PORT_COUNT };
+enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, FADEINDURATION, FADEOUTDURATION, PLUGIN_PORT_COUNT };
 
 /**********************************************************************************************************************************************************/
 
@@ -133,7 +133,9 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   float freeze_gain_db = (float)(*(plugin->ports[FREEZEGAIN]));
   float freeze_gain = std::pow(10,freeze_gain_db/20.0);
   float dry_gain_db = (float)(*(plugin->ports[DRYGAIN]));
-  float fade_duration = (float)(*(plugin->ports[FADEINDURATION]));
+
+  float fade_in_duration = (float)(*(plugin->ports[FADEINDURATION]));
+  float fade_out_duration = (float)(*(plugin->ports[FADEOUTDURATION]));
 
   int c = 0;
   if (freeze==1) c = 1;
@@ -211,15 +213,16 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 
     // Push data to output queue
     /*float sample_duration = 1./((float) plugin->SampleRate);*/
-    float alpha = std::pow(0.99/min_gain, 1./(fade_duration * plugin->SampleRate));
+    float alpha_fade_in = std::pow(0.99/min_gain, 1./(fade_in_duration * plugin->SampleRate));
+    float alpha_fade_out = std::pow(0.99/min_gain, 1./(fade_out_duration * plugin->SampleRate));
 
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
 
       if (plugin->fade_in & (plugin->freeze_envelope_gain<freeze_target_gain))
-        plugin->freeze_envelope_gain*=alpha;
+        plugin->freeze_envelope_gain*=alpha_fade_in;
 
       if (plugin->fade_out & (plugin->freeze_envelope_gain>freeze_target_gain))
-        plugin->freeze_envelope_gain/=alpha;
+        plugin->freeze_envelope_gain/=alpha_fade_out;
 
       if (plugin->fade_out & (plugin->freeze_envelope_gain<=min_gain))
         plugin->freeze_envelope_gain = 0.;
