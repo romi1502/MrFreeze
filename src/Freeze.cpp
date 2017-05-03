@@ -37,9 +37,10 @@ class Freeze {
     temp_buffer.resize(kBufferLen);
 
     dry_gain = 1;
-    freeze_gain = 0;
+    freeze_envelope_gain = 0;
     time_since_last_freeze = -1.;
-    fade_running = false;
+    fade_in = false;
+    fade_out = false;
 
     cont = 0;
   }
@@ -64,9 +65,10 @@ class Freeze {
   std::queue<float> input_queue, output_queue;
   std::vector<float> temp_buffer;
   float dry_gain;
-  float freeze_gain;
+  float freeze_envelope_gain;
   float time_since_last_freeze;
-  bool fade_running;
+  bool fade_in;
+  bool fade_out;
 
   int nBuffers;
   int cont;
@@ -148,22 +150,27 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     plugin->dry_gain = 0;
 
   float freeze_target_gain = 0.;
-  float freeze_init_gain = 0.;
-
+/*  float freeze_init_gain = 0.;
+*/
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    freeze_init_gain = plugin->freeze_gain;
+    /*freeze_init_gain = plugin->freeze_envelope_gain;*/
     /*if (!(plugin->fade_running))*/
-    if (plugin->time_since_last_freeze<0.0)
-      plugin->time_since_last_freeze = 0.;
+    plugin->fade_in = true;
+    plugin->fade_out = false;
+/*    if (plugin->time_since_last_freeze<0.0)
+      plugin->time_since_last_freeze = 0.;*/
 
   } else {
     // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
     /*dry_target_gain = 0*/
-    freeze_target_gain = 1.;
-    freeze_init_gain = plugin->freeze_gain;
-    plugin->time_since_last_freeze = -1.0;
+    freeze_target_gain = 0.0001;
+    /*freeze_init_gain = plugin->freeze_envelope_gain;*/
+    /*plugin->time_since_last_freeze = -1.0;*/
+    plugin->fade_in = false;
+    plugin->fade_out = true;
+
   }
 
 
@@ -199,21 +206,30 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     float fade_duration = (float)(*(plugin->ports[FADEINDURATION]));
 
     // Push data to output queue
-    float sample_duration = 1./((float) plugin->SampleRate);
+    /*float sample_duration = 1./((float) plugin->SampleRate);*/
+    float alpha = std::pow(0.99, 1./(fade_duration * plugin->SampleRate));
+
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
 
-      if ((plugin->time_since_last_freeze<0)||(plugin->time_since_last_freeze>=fade_duration)){
-        plugin->freeze_gain = freeze_target_gain;
+      if (plugin->fade_in & (plugin->freeze_envelope_gain<freeze_target_gain))
+        plugin->freeze_envelope_gain*=alpha;
+
+      if (plugin->fade_out & (plugin->freeze_envelope_gain>freeze_target_gain))
+        plugin->freeze_envelope_gain/=alpha;
+
+      if (plugin->fade_out & (plugin->freeze_envelope_gain<=freeze_target_gain))
+        plugin->freeze_envelope_gain = 0.;
+    /*      if ((plugin->time_since_last_freeze<0)||(plugin->time_since_last_freeze>=fade_duration)){
+        plugin->freeze_envelope_gain = freeze_target_gain;
       }
       else {
         float l = plugin->time_since_last_freeze/fade_duration;
-        plugin->freeze_gain = (1-l)*freeze_init_gain + (l*freeze_target_gain);
+        plugin->freeze_envelope_gain = (1-l)*freeze_init_gain + (l*freeze_target_gain);
         plugin->time_since_last_freeze+= sample_duration;
-      }
+      }*/
 
-      plugin->freeze_gain = 1;
       plugin->output_queue.push(
-                plugin->freeze_gain * freeze_gain * result[sample_idx] +
+                plugin->freeze_envelope_gain * freeze_gain * result[sample_idx] +
                 plugin->dry_gain * plugin->temp_buffer[sample_idx]
               );
     }
