@@ -41,6 +41,7 @@ struct Freezer::Parameters {
   size_t index_sliding;
 
   bool is_on;
+  bool first_on;
   bool just_on;
 
   FFT fft;
@@ -135,6 +136,7 @@ void Freezer::Init(size_t channel_number, const std::string& wisdom,
   params_->hop_size = static_cast<size_t>(fft_size * (1.0 - overlap_rate));
   params_->index_sliding = fft_size - params_->hop_size;
   params_->is_on = false;
+  params_->first_on = false;
   params_->just_on = false;
   params_->fft.Init(fft_size, wisdom);
 }
@@ -211,7 +213,7 @@ std::vector<float> Freezer::Read(std::error_code& err) {
     }
 
     // update output if is_on
-    if (true) {//params_->is_on
+    if (params_->first_on) {//params_->is_on
       params_->total_dphi += params_->dphi;
       InplaceModulo(&(params_->total_dphi), 2 * M_PI);
 
@@ -247,6 +249,7 @@ std::vector<float> Freezer::Read(std::error_code& err) {
 }
 
 void Freezer::Enable() {
+  params_->first_on = true;
   if (!params_->is_on) {
     params_->just_on = true;
   }
