@@ -37,7 +37,7 @@ class Freeze {
     temp_buffer.resize(kBufferLen);
 
     dry_gain = 1;
-    freeze_envelope_gain = 0;
+    freeze_envelope_gain = 0.001;
     time_since_last_freeze = -1.;
     fade_in = false;
     fade_out = false;
@@ -133,6 +133,8 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   float freeze_gain_db = (float)(*(plugin->ports[FREEZEGAIN]));
   float freeze_gain = std::pow(10,freeze_gain_db/20.0);
   float dry_gain_db = (float)(*(plugin->ports[DRYGAIN]));
+  float fade_duration = (float)(*(plugin->ports[FADEINDURATION]));
+
   int c = 0;
   if (freeze==1) c = 1;
 
@@ -149,12 +151,14 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
   if (dry_gain_db == -48)
     plugin->dry_gain = 0;
 
-  float freeze_target_gain = 0.;
+  float freeze_target_gain;
 /*  float freeze_init_gain = 0.;
 */
   if (plugin->freezer->IsEnabled()) {
 /*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
+    if (plugin->freeze_envelope_gain == 0)
+      plugin->freeze_envelope_gain = 0.001;
     /*freeze_init_gain = plugin->freeze_envelope_gain;*/
     /*if (!(plugin->fade_running))*/
     plugin->fade_in = true;
@@ -203,7 +207,6 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
                 << err.message() << std::endl;
     }
 
-    float fade_duration = (float)(*(plugin->ports[FADEINDURATION]));
 
     // Push data to output queue
     /*float sample_duration = 1./((float) plugin->SampleRate);*/
