@@ -2,6 +2,6 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
 
 <http://romain-hennequin.fr/plugins/mod-devel/Freeze> a lv2:Plugin;
-    lv2:binary <mod-mrfreeze.so>;
+    lv2:binary <mrfreeze.so>;
     rdfs:seeAlso <Freeze.ttl>,<modgui.ttl>.
 

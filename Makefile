@@ -14,7 +14,7 @@ endif
 RM = rm -f
 
 # plugin name
-PLUGIN = mod-mrfreeze
+PLUGIN = mrfreeze
 PLUGIN_SO = $(PLUGIN).so
 
 # effect path
