@@ -3,7 +3,7 @@ CXX ?= g++
 
 # flags
 #  -I../Shared_files
-CXXFLAGS += -O3 -ffast-math -Wall -fPIC -DPIC $(shell pkg-config --cflags fftw3f) $(shell pkg-config --cflags eigen3) -std=c++11 -I./src
+CXXFLAGS += -O3 -ffast-math -Wall -fPIC -DPIC $(shell pkg-config --cflags fftw3f) $(shell pkg-config --cflags eigen3) -std=c++11 -I./src -I./Eigen
 LDFLAGS += -shared $(shell pkg-config --libs fftw3f)
 
 ifneq ($(NOOPT),true)

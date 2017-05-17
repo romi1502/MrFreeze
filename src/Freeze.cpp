@@ -3,11 +3,11 @@
 #include <cmath>
 
 #include <iostream>
-#include <queue>
 
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 
 #include "freeze_engine/freeze_engine.h"
+#include "utils/queue.h"
 
 /**********************************************************************************************************************************************************/
 
@@ -19,7 +19,9 @@ enum { IN, OUT, FREEZE, FREEZEGAIN, DRYGAIN, FADEINDURATION, FADEOUTDURATION, PL
 class Freeze {
  public:
   Freeze(uint32_t n_samples, int nBuffers, double samplerate,
-         const std::string& wfile) {
+         const std::string& wfile) :
+           input_queue(n_samples * 4),
+           output_queue(n_samples * 4) {
     wisdomFile = wfile;
     Construct(n_samples, nBuffers, samplerate, wfile.c_str());
   }
@@ -62,7 +64,7 @@ class Freeze {
   float* ports[PLUGIN_PORT_COUNT];
 
   freeze::Freezer* freezer;
-  std::queue<float> input_queue, output_queue;
+  freeze::Queue<float> input_queue, output_queue;
   std::vector<float> temp_buffer;
   float dry_gain;
   float freeze_envelope_gain;
@@ -154,32 +156,19 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
     plugin->dry_gain = 0;
 
   float freeze_target_gain;
-/*  float freeze_init_gain = 0.;
-*/
   float min_gain = 0.001;
   if (plugin->freezer->IsEnabled()) {
-/*    plugin->dry_gain *= 0.8;*/
     freeze_target_gain = 1.;
-    if (plugin->freeze_envelope_gain < min_gain)
+    if (plugin->freeze_envelope_gain < min_gain) {
       plugin->freeze_envelope_gain = min_gain;
-    /*freeze_init_gain = plugin->freeze_envelope_gain;*/
-    /*if (!(plugin->fade_running))*/
+    }
     plugin->fade_in = true;
     plugin->fade_out = false;
-/*    if (plugin->time_since_last_freeze<0.0)
-      plugin->time_since_last_freeze = 0.;*/
-
   } else {
-    // plugin->dry_gain = 1.0 - (1.0 - plugin->dry_gain) * 0.8;
-    /*dry_target_gain = 0*/
     freeze_target_gain = min_gain;
-    /*freeze_init_gain = plugin->freeze_envelope_gain;*/
-    /*plugin->time_since_last_freeze = -1.0;*/
     plugin->fade_in = false;
     plugin->fade_out = true;
-
   }
-
 
   // queue input data
   for (size_t sample_idx = 0; sample_idx < n_samples; sample_idx++) {
@@ -212,33 +201,31 @@ void Freeze::run(LV2_Handle instance, uint32_t n_samples) {
 
 
     // Push data to output queue
-    /*float sample_duration = 1./((float) plugin->SampleRate);*/
-    float alpha_fade_in = std::pow(0.99/min_gain, 1./(fade_in_duration * plugin->SampleRate));
-    float alpha_fade_out = std::pow(0.99/min_gain, 1./(fade_out_duration * plugin->SampleRate));
+    float alpha_fade_in =
+        std::pow(0.99 / min_gain, 1. / (fade_in_duration * plugin->SampleRate));
+    float alpha_fade_out =
+        std::pow(0.99 / min_gain,
+                 1. / (fade_out_duration * plugin->SampleRate));
 
     for (size_t sample_idx = 0; sample_idx < result.size(); sample_idx++) {
-
-      if (plugin->fade_in & (plugin->freeze_envelope_gain<freeze_target_gain))
+      if (plugin->fade_in &&
+           (plugin->freeze_envelope_gain < freeze_target_gain)) {
         plugin->freeze_envelope_gain*=alpha_fade_in;
-
-      if (plugin->fade_out & (plugin->freeze_envelope_gain>freeze_target_gain))
-        plugin->freeze_envelope_gain/=alpha_fade_out;
-
-      if (plugin->fade_out & (plugin->freeze_envelope_gain<=min_gain))
-        plugin->freeze_envelope_gain = 0.;
-    /*      if ((plugin->time_since_last_freeze<0)||(plugin->time_since_last_freeze>=fade_duration)){
-        plugin->freeze_envelope_gain = freeze_target_gain;
       }
-      else {
-        float l = plugin->time_since_last_freeze/fade_duration;
-        plugin->freeze_envelope_gain = (1-l)*freeze_init_gain + (l*freeze_target_gain);
-        plugin->time_since_last_freeze+= sample_duration;
-      }*/
+
+      if (plugin->fade_out &&
+           (plugin->freeze_envelope_gain > freeze_target_gain)) {
+        plugin->freeze_envelope_gain/=alpha_fade_out;
+      }
+
+      if (plugin->fade_out && (plugin->freeze_envelope_gain <= min_gain)) {
+        plugin->freeze_envelope_gain = 0.;
+      }
 
       plugin->output_queue.push(
-                plugin->freeze_envelope_gain * freeze_gain * result[sample_idx] +
-                plugin->dry_gain * plugin->temp_buffer[sample_idx]
-              );
+          plugin->freeze_envelope_gain * freeze_gain * result[sample_idx] +
+          plugin->dry_gain * plugin->temp_buffer[sample_idx]
+      );
     }
   }
 
